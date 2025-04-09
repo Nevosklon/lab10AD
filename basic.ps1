@@ -1,6 +1,6 @@
 $S_OU_PATH = "OU=Staff_OU,OU=4AWS,DC=W2K19AD,DC=local"
 $L_OU_PATH = "OU=Student_OU,OU=4AWS,DC=W2K19AD,DC=local"
-$PASSWORD = ConvertTo-SecureString -string "Password1" -AsPlainText -Force;
+$PASSWORD = ConvertTo-SecureString -String "Password1" -AsPlainText -Force;
 
 New-ADOrganizationalUnit -Name "4AWS" -Path "DC=W2K19AD,DC=local" -ProtectedFromAccidentalDeletion $False
 New-ADOrganizationalUnit -Name "Student_OU" -Path "OU=4AWS,DC=W2K19AD,DC=local" -ProtectedFromAccidentalDeletion $False
@@ -50,7 +50,7 @@ Add-ADGroupMember -Identity "DL_Student_Files_R" -Members "gg_students"
 for ( $i=0; $i -le 3; $i++ ) {
     $OU_PATH = $S_OU_PATH
     $GROUP = "gg_students"
-    if ( $USERS['Descriptions'] -eq 'Lecturer' ) {
+    if ( $USERS['Descriptions'][$i] -eq 'Lecturer' ) {
         $OU_PATH = $L_OU_PATH
         $GROUP = "gg_lectures"
     }
@@ -62,7 +62,7 @@ for ( $i=0; $i -le 3; $i++ ) {
         -Description $USERS['Descriptions'][$i] `
         -Path $OU_PATH `
         -ChangePasswordAtLogon $false `
-        -HomeDirectory '\\Sever1\homes\%username%' `
+        -HomeDirectory '\\Server1\homes\%username%' `
         -HomeDrive "H:" `
         -Enabled $true 
         
@@ -84,11 +84,11 @@ $preserveInheritance = $true
 $NewAcl.SetAccessRuleProtection($isProtected, $preserveInheritance)
 Set-Acl -Path $folder_path -AclObject $NewAcl
 
-$acl = Get-Acl $student_path
+$acl = Get-Acl $folder_path
 $permissionR = "DL_Student_Files_R","ReadAndExecute, ListDirectory, ReadData","Allow"
 $accessRuleR = New-Object System.Security.AccessControl.FileSystemAccessRule $permissionR
 $acl.SetAccessRule($accessRuleR)
-Set-Acl -Path $student_path -AclObject $acl
+Set-Acl -Path $folder_path -AclObject $acl
 
 $permissionM = "DL_Student_Files_M","ReadAndExecute, ListDirectory, ReadData, WriteData, Modify","Allow"
 $accessRuleM = New-Object System.Security.AccessControl.FileSystemAccessRule $permissionM
@@ -99,15 +99,15 @@ Get-Acl $folder_path
 
 mkdir C:\resources
 New-SmbShare `
-    -Name "C:\resources" `
-    -Path $folder_path `
+    -Name "resources" `
+    -Path "C:\resources" `
     -FullAccess "Everyone"
 
 
 mkdir C:\homes    
 New-SmbShare `
-    -Name "C:\homes" `
-    -Path $folder_path `
+    -Name "homes" `
+    -Path "C:\homes" `
     -FullAccess "Everyone"
 
 Write-Host "net use H:\ \\Server1\homes\%username%"
